@@ -51,7 +51,7 @@ if option == "Upload an image":
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
     if uploaded_file is not None:
         # Read the image
-        image = cv2.imdecode(np.fromstring(uploaded_file.read(), np.uint8), 1)
+        image = cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), 1)
 
         # Display the image
         st.image(image, caption='Uploaded Image', use_column_width=True)
@@ -62,35 +62,23 @@ if option == "Upload an image":
             st.write(f"Predicted Gesture: {prediction}")
 
 elif option == "Use camera":
-    # Start the camera
-    cap = cv2.VideoCapture(0)  # Use 0 for default camera
+    st.write("Press 'Capture Image' to take a picture using your webcam.")
 
-    # Create a placeholder for the camera feed
-    frame_placeholder = st.empty()
+    if st.button('Capture Image'):
+        cap = cv2.VideoCapture(0)  # Use 0 for default camera
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            st.write("Error reading frame from camera.")
-            break
+        if not cap.isOpened():
+            st.error("Error: Could not open camera.")
+        else:
+            ret, frame = cap.read()
+            if not ret:
+                st.error("Error reading frame from camera.")
+            else:
+                # Display the captured image
+                st.image(frame, channels="BGR", caption='Captured Image', use_column_width=True)
 
-        # Display the camera feed
-        frame_placeholder.image(frame, channels="BGR")
+                # Make prediction
+                prediction = predict_gesture(frame)
+                st.write(f"Predicted Gesture: {prediction}")
 
-        # Make prediction on the current frame
-        if st.button('Capture Image'):
-            # Convert to grayscale and resize
-            img_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            img = cv2.resize(img_gray, (250, 250))
-
-            # Display the captured image
-            st.image(img, caption='Captured Image', use_column_width=True)
-
-            # Make prediction
-            prediction = predict_gesture(img)
-            st.write(f"Predicted Gesture: {prediction}")
-            break
-
-    # Release the camera and clear the placeholder
-    cap.release()
-    frame_placeholder.empty()
+            cap.release()
