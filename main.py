@@ -1,7 +1,7 @@
 import streamlit as st
 import torch.nn as nn
 import numpy as np
-import cv2  # Import OpenCV
+Import OpenCV
 
 # Define the CNN model
 class CNNModel(nn.Module):
