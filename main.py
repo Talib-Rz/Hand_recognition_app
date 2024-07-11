@@ -1,7 +1,6 @@
 import streamlit as st
 import torch
 import torch.nn as nn
-import cv2
 import numpy as np
 
 # Define the CNN model
