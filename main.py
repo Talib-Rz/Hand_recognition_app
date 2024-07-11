@@ -1,7 +1,7 @@
 import streamlit as st
 import torch.nn as nn
 import numpy as np
-import cv2
+import cv2  # Import OpenCV
 
 # Define the CNN model
 class CNNModel(nn.Module):
@@ -27,7 +27,7 @@ gesture_folders = ['01_palm', '02_l', '03_fist', '04_fist_moved', '05_thumb',
 
 # Load the trained model
 model = CNNModel(num_classes=len(gesture_folders))
-model.load_state_dict(torch.load('hand_gesture_model.pth'))  # Update with your model path
+model.load_state_dict(torch.load('hand_gesture_model.pth', map_location=torch.device('cpu')))  # Update with your model path
 model.eval()
 
 # Define the prediction function
@@ -42,7 +42,6 @@ def predict_gesture(image):
 
 # Streamlit app
 st.title("Hand Gesture Recognition")
-
 
 # Option to choose between uploading an image or using the camera
 option = st.radio("Choose an option:", ("Upload an image", "Use camera"))
