@@ -25,4 +25,46 @@ class CNNModel(nn.Module):
 
 # Load the gesture labels
 gesture_folders = ['01_palm', '02_l', '03_fist', '04_fist_moved', '05_thumb',
-  
+                   '06_index', '07_ok', '08_palm_moved', '09_c', '10_down']
+
+# Load the trained model
+model = CNNModel(num_classes=len(gesture_folders))
+model.load_state_dict(torch.load('hand_gesture_model.pth'))  # Update with your model path
+model.eval()
+
+# Define the prediction function
+def predict_gesture(image):
+    img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    img = cv2.resize(img, (100, 100))
+    img_tensor = torch.tensor(img, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+    with torch.no_grad():
+        output = model(img_tensor)
+        _, predicted = torch.max(output, 1)
+        return gesture_folders[predicted.item()]
+
+# Streamlit app
+st.title("Hand Gesture Recognition")
+
+# Option to choose between uploading an image or using the camera
+option = st.radio("Choose an option:", ("Upload an image", "Use camera"))
+
+if option == "Upload an image":
+    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+    if uploaded_file is not None:
+        # Read the image
+        image = cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), 1)
+
+        # Display the image
+        st.image(image, caption='Uploaded Image', use_column_width=True)
+
+        # Make prediction
+        if st.button('Predict'):
+            prediction = predict_gesture(image)
+            st.write(f"Predicted Gesture: {prediction}")
+
+elif option == "Use camera":
+    st.write("Allow access to your camera to capture a hand gesture.")
+
+    class VideoTransformer(VideoTransformerBase):
+        def __init__(self):
+            self.last_frame = 
