@@ -1,9 +1,9 @@
 streamlit
+opencv-python-headless
 torch
 opencv-python
 numpy
 scikit-learn
 matplotlib
 Pillow
-opencv-python-headless
 streamlit-webrtc
