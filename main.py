@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import cv2
 import numpy as np
+from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
 
 # Load your trained model
 class CNNModel(nn.Module):
@@ -62,23 +63,23 @@ if option == "Upload an image":
             st.write(f"Predicted Gesture: {prediction}")
 
 elif option == "Use camera":
-    st.write("Press 'Capture Image' to take a picture using your webcam.")
+    st.write("Allow access to your camera to capture a hand gesture.")
 
-    if st.button('Capture Image'):
-        cap = cv2.VideoCapture(0)  # Use 0 for default camera
+    class VideoTransformer(VideoTransformerBase):
+        def transform(self, frame):
+            img = frame.to_ndarray(format="bgr24")
+            prediction = predict_gesture(img)
+            cv2.putText(img, f"Prediction: {prediction}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+            return img
 
-        if not cap.isOpened():
-            st.error("Error: Could not open camera.")
-        else:
-            ret, frame = cap.read()
-            if not ret:
-                st.error("Error reading frame from camera.")
-            else:
-                # Display the captured image
+    webrtc_ctx = webrtc_streamer(key="example", video_transformer_factory=VideoTransformer)
+
+    if webrtc_ctx.video_transformer:
+        if st.button('Capture Image'):
+            frame = webrtc_ctx.video_transformer.last_frame
+            if frame is not None:
                 st.image(frame, channels="BGR", caption='Captured Image', use_column_width=True)
-
-                # Make prediction
                 prediction = predict_gesture(frame)
                 st.write(f"Predicted Gesture: {prediction}")
-
-            cap.release()
+            else:
+                st.write("No frame captured.")
