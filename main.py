@@ -67,4 +67,21 @@ elif option == "Use camera":
 
     class VideoTransformer(VideoTransformerBase):
         def __init__(self):
-            self.last_frame = 
+            self.last_frame = None
+
+        def transform(self, frame):
+            img = frame.to_ndarray(format="bgr24")
+            self.last_frame = img
+            return img
+
+    webrtc_ctx = webrtc_streamer(key="example", video_transformer_factory=VideoTransformer)
+
+    if webrtc_ctx.video_transformer:
+        if st.button('Capture Image'):
+            frame = webrtc_ctx.video_transformer.last_frame
+            if frame is not None:
+                st.image(frame, channels="BGR", caption='Captured Image', use_column_width=True)
+                prediction = predict_gesture(frame)
+                st.write(f"Predicted Gesture: {prediction}")
+            else:
+                st.write("No frame captured.")
