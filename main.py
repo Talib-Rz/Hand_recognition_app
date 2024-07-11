@@ -43,7 +43,7 @@ def predict_gesture(image):
 
 # Streamlit app
 st.title("Hand Gesture Recognition")
-st.title("Please use dark background while using camera")
+
 
 # Option to choose between uploading an image or using the camera
 option = st.radio("Choose an option:", ("Upload an image", "Use camera"))
