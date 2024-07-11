@@ -2,7 +2,6 @@ import streamlit as st
 import torch
 import torch.nn as nn
 
-
 # Define the CNN model
 class CNNModel(nn.Module):
     def __init__(self, num_classes):
