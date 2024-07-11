@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
 
-# Load your trained model
+# Define the CNN model
 class CNNModel(nn.Module):
     def __init__(self, num_classes):
         super(CNNModel, self).__init__()
@@ -23,63 +23,6 @@ class CNNModel(nn.Module):
         x = self.fc2(x)
         return x
 
-# Load the labels
+# Load the gesture labels
 gesture_folders = ['01_palm', '02_l', '03_fist', '04_fist_moved', '05_thumb',
-                   '06_index', '07_ok', '08_palm_moved', '09_c', '10_down']
-
-# Load the trained model
-model = CNNModel(num_classes=len(gesture_folders))
-model.load_state_dict(torch.load('hand_gesture_model.pth'))  # Update with your model path
-model.eval()
-
-# Define the prediction function
-def predict_gesture(image):
-    img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    img = cv2.resize(img, (100, 100))
-    img_tensor = torch.tensor(img, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
-    with torch.no_grad():
-        output = model(img_tensor)
-        _, predicted = torch.max(output, 1)
-        return gesture_folders[predicted.item()]
-
-# Streamlit app
-st.title("Hand Gesture Recognition")
-
-# Option to choose between uploading an image or using the camera
-option = st.radio("Choose an option:", ("Upload an image", "Use camera"))
-
-if option == "Upload an image":
-    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-    if uploaded_file is not None:
-        # Read the image
-        image = cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), 1)
-
-        # Display the image
-        st.image(image, caption='Uploaded Image', use_column_width=True)
-
-        # Make prediction
-        if st.button('Predict'):
-            prediction = predict_gesture(image)
-            st.write(f"Predicted Gesture: {prediction}")
-
-elif option == "Use camera":
-    st.write("Allow access to your camera to capture a hand gesture.")
-
-    class VideoTransformer(VideoTransformerBase):
-        def transform(self, frame):
-            img = frame.to_ndarray(format="bgr24")
-            prediction = predict_gesture(img)
-            cv2.putText(img, f"Prediction: {prediction}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-            return img
-
-    webrtc_ctx = webrtc_streamer(key="example", video_transformer_factory=VideoTransformer)
-
-    if webrtc_ctx.video_transformer:
-        if st.button('Capture Image'):
-            frame = webrtc_ctx.video_transformer.last_frame
-            if frame is not None:
-                st.image(frame, channels="BGR", caption='Captured Image', use_column_width=True)
-                prediction = predict_gesture(frame)
-                st.write(f"Predicted Gesture: {prediction}")
-            else:
-                st.write("No frame captured.")
+  
